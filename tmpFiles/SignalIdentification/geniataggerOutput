@@ -1,0 +1,20 @@
+There	There	EX	B-NP	O
+is	be	VBZ	B-VP	O
+no	no	DT	B-NP	O
+evidence	evidence	NN	I-NP	O
+of	of	IN	B-PP	O
+cervical	cervical	JJ	B-NP	O
+lymph	lymph	NN	I-NP	O
+node	node	NN	I-NP	O
+enlargement	enlargement	NN	I-NP	O
+.	.	.	O	O
+There	There	EX	B-NP	O
+is	be	VBZ	B-VP	O
+no	no	DT	B-NP	O
+evidene	evidene	NN	I-NP	O
+of	of	IN	B-PP	O
+lymph	lymph	NN	B-NP	O
+node	node	NN	I-NP	O
+enlargement	enlargement	NN	I-NP	O
+.	.	.	O	O
+

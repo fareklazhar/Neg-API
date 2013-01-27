@@ -1,0 +1,32 @@
+
+
+
+
+prokaryotic	prokaryotic	JJ	B-NP	genome	NNS	I-NP	Mine	VBG	B-VP	for	0	OUTSIDE
+for	for	IN	B-PP	unknown	JJ	B-NP	genome	NNS	I-NP	amino	prokaryotic	OUTSIDE
+amino	amino	JJ	I-NP	acid	NNS	I-NP	unknown	JJ	B-NP	:	for	OUTSIDE
+:	:	:	O	a	DT	B-NP	acid	NNS	I-NP	stop-codon-based	amino	OUTSIDE
+stop-codon-based	stop-codon-based	JJ	I-NP	approach	NN	I-NP	a	DT	B-NP	.	:	OUTSIDE
+.	.	.	O	0	0	0	approach	NN	I-NP	0	stop-codon-based	OUTSIDE
+
+
+.	.	.	O	0	0	0	Abstract	NN	B-NP	0	0	OUTSIDE
+
+
+.	.	.	O	0	0	0	Background	NN	B-NP	0	0	OUTSIDE
+
+
+and	and	CC	I-NP	pyrrolysine	NN	I-NP	Selenocysteine	NN	B-NP	be	0	OUTSIDE
+are	be	VBP	B-VP	the	DT	B-NP	pyrrolysine	NN	I-NP	21st	and	OUTSIDE
+21st	21st	JJ	I-NP	and	CC	I-NP	the	DT	B-NP	22nd	be	OUTSIDE
+22nd	22nd	JJ	I-NP	amino	NN	I-NP	and	CC	I-NP	acid	21st	OUTSIDE
+acids	acid	NNS	I-NP	,	,	O	amino	NN	I-NP	which	22nd	OUTSIDE
+which	which	WDT	B-NP	be	VBP	B-VP	,	,	O	genetically	acid	OUTSIDE
+genetically	genetically	RB	I-VP	encode	VBN	I-VP	be	VBP	B-VP	by	which	OUTSIDE
+by	by	IN	B-PP	stop	NN	B-NP	encode	VBN	I-VP	codon	genetically	OUTSIDE
+codons	codon	NNS	I-NP	.	.	O	stop	NN	B-NP	0	by	OUTSIDE
+
+
+a	a	DT	B-NP	number	NN	I-NP	Since	IN	B-SBAR	of	0	OUTSIDE
+of	of	IN	B-PP	microbial	JJ	B-NP	number	NN	I-NP	genome	a	OUTSIDE
+genomes	genome	NNS	I-NP	have	VBP	B-VP	microbial	JJ	B-NP	be	of	OUTSIDE
