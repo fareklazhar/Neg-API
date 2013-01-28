@@ -52,6 +52,7 @@ class Document(object):
         tokenNum += 1
       if result_array[0] == ".":
         self.sentences[sentenceNum].setIsNegation(isNegation)
+        isNegation = False
         tokenNum = 0
         sentenceNum += 1
   def runParser(self):
@@ -78,6 +79,7 @@ class Document(object):
     j["results"] = []
     annotated_signal = []
     annotated_scope = []
+
     for sentence in self.sentences:
       tmp = {}
       tmp["result_annotated_signal"] = sentence.sentence_annotated_signal
@@ -158,7 +160,8 @@ class Sentence(object):
       self.flag = False
     else:
       if self.flag == True:
-        self.negation_signals[len(self.negation_signals - 1)].addNegationToken(token, tokenNum)
+        
+        self.negation_signals[len(self.negation_signals) - 1].addNegationToken(token, tokenNum)
       self.sentence_annotated_signal += token + " "
   def setScopeClass(self, tokenNum, scopeClass, token):
     self.token_Instances[tokenNum].setScopeClass(scopeClass)
@@ -179,6 +182,7 @@ class Sentence(object):
       if len(self.negation_signals) == 0:
         for i in range(47):
           scopeFeature += "\t0"
+        scopeFeature += "\n"
       else:
         tmp_negation_signals = sorted(self.negation_signals, key=lambda x:x.getDistanceInfo(i)["distance"])
         scopeFeature += "\t" + tmp_negation_signals[0].neg_phrase
@@ -268,34 +272,69 @@ class Chunk(object):
   def getFeatureLine(self):
     return "\t" + self.firstToken + "\t" + self.lastToken + "\t" + self.tokenLine + "\t" + self.posLine
 
+def validateRequests(options):
+  if options["train_type"] in ["clinical_records", "abstracts", "full_papers"]:
+    pass
+  elif options["train_type"] == "NO_REQUEST":
+    options["train_type"] = "clinical_records"
+  else:
+    print "INVALID_REQUEST_train_type"
+    makeNGResponce("INVALID_REQUEST")
 
+  if options["output_type"] in ["json", "text"]:
+    pass
+  elif options["output_type"] == "NO_REQUEST":
+    options["output_type"] = "json"
+  else:
+    print "INVALID_REQUEST_output_type"
+    makeNGResponce("INVALID_REQUEST")
 
-def runPhase1(document):
-###  parse using geniatagger  ###
+  if (options["sentence"] == "NO_REQUEST" and options["src"] == "NO_REQUEST") or (options["sentence"] != "NO_REQUEST" and options["src"] != "NO_REQUEST"):
+    makeNGResponce("INVALID_REQUEST")
+  elif options["sentence"] != "NO_REQUEST":
+    options["input_type"] = "sentence"
+  else: 
+    options["input_type"] = "src"
+
+def makeNGResponce(status):
+  print "**********"
+  j = {}
+  j["status"] = status
+  j["results"] = []
+  print json.dumps(j)
+  sys.exit()
+
+def runGeniatagger(options):
   os.chdir("../lib/geniatagger-3.0.1/")
-  if len(sys.argv) > 1:
-    userInputSentence = sys.argv[1]
-    commands.getoutput("echo " + userInputSentence + " | ./geniatagger > ../../tmpFiles/SignalIdentification/geniataggerOutput")
+  if options["input_type"] == "sentence":
+    commands.getoutput("echo " + options["sentence"] + " | ./geniatagger > ../../tmpFiles/SignalIdentification/geniataggerOutput")
+  else:
+    console = commands.getoutput("wget -O input " + options["src"])
+    if len(console.split("\n")) > 2:
+      if console.split("\n")[len(console.split("\n")) - 2].find("NOT FOUND") != -1:
+        makeNGResponce("SRC_FILE_NOT_FOUND")
+      else:
+        print commands.getoutput("echo " + options["sentence"] + " | ./geniatagger < input > ../../tmpFiles/SignalIdentification/geniataggerOutput")
+    sys.exit()
   os.chdir("../../cgi-bin")
-###  make featureset_signal using geniatagger output  ###
+def runPhase1(document, options):
   geniataggerOutput = open("../tmpFiles/SignalIdentification/geniataggerOutput")
   features = geniataggerOutput.readlines()
   document.parseGeniaFeature(features)
   output_signalFeature = open("../tmpFiles/SignalIdentification/features", "w")
   document.outputSignalFeature(output_signalFeature)
   output_signalFeature.close()
-  commands.getoutput("/usr/local/bin/timbl -f ../data/phase1/clinical_records.txt -t ../tmpFiles/SignalIdentification/features -o ../tmpFiles/SignalIdentification/timbl_learned")
+  commands.getoutput("/usr/local/bin/timbl -f ../data/phase1/" + options["train_type"] + ".txt -t ../tmpFiles/SignalIdentification/features -o ../tmpFiles/SignalIdentification/timbl_learned")
   inputTimblLearned = open("../tmpFiles/SignalIdentification/timbl_learned")
   results = inputTimblLearned.readlines()
   document.parseTimblLearned_signal(results)
   inputTimblLearned.close()
-
-def runPhase2(document):
+def runPhase2(document, options):
   output_scopeFeature = open("../tmpFiles/ScopeIdentification/features", "w")
   for sentence in document.sentences:
     sentence.outputScopeFeature(output_scopeFeature)
   output_scopeFeature.close()
-  commands.getoutput("/usr/local/bin/timbl -f ../data/phase2/clinical_records.txt -t ../tmpFiles/ScopeIdentification/features -o ../tmpFiles/ScopeIdentification/timbl_learned")
+  commands.getoutput("/usr/local/bin/timbl -f ../data/phase2/" + options["train_type"] + ".txt -t ../tmpFiles/ScopeIdentification/features -o ../tmpFiles/ScopeIdentification/timbl_learned")
   inputTimblLearned = open("../tmpFiles/ScopeIdentification/timbl_learned")
   results = inputTimblLearned.readlines()
   document.parseTimblLearned_scope(results)
@@ -305,8 +344,20 @@ def runPhase2(document):
 ########  main  ########
 if __name__ == "__main__":
   document = Document()
-  runPhase1(document)
-  runPhase2(document)
+  options = {"train_type" : "clinical_records", "output_type" : "json"}
+  if len(sys.argv) > 4:
+    options["train_type"] = sys.argv[1]
+    options["output_type"] = sys.argv[2]
+    options["src"] = sys.argv[3]
+    options["sentence"] = sys.argv[4]
+    validateRequests(options)
+  else:
+    makeNGResponce("INTERNAL_ERROR")
+  
+  runGeniatagger(options)
+  
+  runPhase1(document, options)
+  runPhase2(document, options)
   print "**********"
   print document.makeResponse_JSON()
   

@@ -1,4 +1,3 @@
-print "import jpype"
 import jpype
 
 from standoff import TextStandoff
@@ -81,12 +80,9 @@ def startJvm():
     os.environ.setdefault("STANFORD_PARSER_HOME", "../lib/stanford-parser-python-r22186/3rdParty/stanford-parser/stanford-parser-2010-08-20")
     global stanford_parser_home
     stanford_parser_home = os.environ["STANFORD_PARSER_HOME"]
-    print "OK"
-    print jpype
     jpype.startJVM(jpype.getDefaultJVMPath(),
                    "-ea",
                    "-Djava.class.path=%s/stanford-parser.jar" % (stanford_parser_home),)
-    print "OK"
 
 startJvm() # one jvm per python instance.
 
