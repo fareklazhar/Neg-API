@@ -340,9 +340,10 @@ def runPhase2(document, options):
   document.parseTimblLearned_scope(results)
   document.runParser()
 
+  
 
 ########  main  ########
-if __name__ == "__main__":
+def main():
   document = Document()
   options = {"train_type" : "clinical_records", "output_type" : "json"}
   if len(sys.argv) > 4:
@@ -361,3 +362,6 @@ if __name__ == "__main__":
   print "**********"
   print document.makeResponse_JSON()
   
+
+if __name__ == "__main__":
+  main()
