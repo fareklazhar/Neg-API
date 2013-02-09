@@ -1,0 +1,13 @@
+ERROR { Illegal instruction:'This' in line:This	This	DT	B-NP	be	VBZ	B-VP	0	0	0	file	0	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'is' in line:is	be	VBZ	B-VP	file	JJ	B-NP	This	DT	B-NP	input	0	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'file' in line:file	file	JJ	B-NP	input	NN	I-NP	be	VBZ	B-VP	test	This	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'input' in line:input	input	NN	I-NP	test	NN	I-NP	file	JJ	B-NP	.	be	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'test' in line:test	test	NN	I-NP	.	.	O	input	NN	I-NP	0	file	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'.' in line:.	.	.	O	0	0	0	test	NN	I-NP	0	input	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'This' in line:This	This	DT	B-NP	text	NN	I-NP	0	0	0	file	0	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'text' in line:text	text	NN	I-NP	file	NN	I-NP	This	DT	B-NP	have	0	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'file' in line:file	file	NN	I-NP	have	VBZ	B-VP	text	NN	I-NP	2	This	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'has' in line:has	have	VBZ	B-VP	2	CD	B-NP	file	NN	I-NP	line	text	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'2' in line:2	2	CD	B-NP	line	NNS	I-NP	have	VBZ	B-VP	.	file	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'lines' in line:lines	line	NNS	I-NP	.	.	O	2	CD	B-NP	0	have	UNKNOWN_LABEL}
+ERROR { Illegal instruction:'.' in line:.	.	.	O	0	0	0	line	NNS	I-NP	0	2	UNKNOWN_LABEL}

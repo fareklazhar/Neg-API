@@ -1,5 +1,5 @@
 # coding: utf-8
-import os, commands, sys, json, math
+import os, commands, sys, json, math, codecs, re
 from runParser import ScopeFinding
 
 class Document(object):
@@ -7,8 +7,9 @@ class Document(object):
     self.sentences = []
     self.previousToken = ""
   def parseGeniaFeature(self, features):
+    print features
     tokenNum = 0
-    for feature in features:
+    for feature in features.split("\n"):
       feature_array = feature.replace("\n", "").split("\t")
       if len(feature_array) == 5:
         self.selectSentence(feature_array, tokenNum)
@@ -88,6 +89,11 @@ class Document(object):
       j["results"].append(tmp)
     
     return json.dumps(j)
+  def makeResponse_text(self):
+    t = ""
+    for sentence in self.sentences:
+      t += sentence.sentence_annotated_scope + "\n"
+    return t
 
 
 
@@ -279,7 +285,7 @@ def validateRequests(options):
     options["train_type"] = "clinical_records"
   else:
     print "INVALID_REQUEST_train_type"
-    makeNGResponce("INVALID_REQUEST")
+    makeNGResponse("INVALID_REQUEST")
 
   if options["output_type"] in ["json", "text"]:
     pass
@@ -287,16 +293,17 @@ def validateRequests(options):
     options["output_type"] = "json"
   else:
     print "INVALID_REQUEST_output_type"
-    makeNGResponce("INVALID_REQUEST")
+    makeNGResponse("INVALID_REQUEST")
 
   if (options["sentence"] == "NO_REQUEST" and options["src"] == "NO_REQUEST") or (options["sentence"] != "NO_REQUEST" and options["src"] != "NO_REQUEST"):
-    makeNGResponce("INVALID_REQUEST")
+    print "INVALID_REQUEST_sentence_or_src"
+    makeNGResponse("INVALID_REQUEST")
   elif options["sentence"] != "NO_REQUEST":
     options["input_type"] = "sentence"
   else: 
     options["input_type"] = "src"
 
-def makeNGResponce(status):
+def makeNGResponse(status):
   print "**********"
   j = {}
   j["status"] = status
@@ -306,20 +313,34 @@ def makeNGResponce(status):
 
 def runGeniatagger(options):
   os.chdir("../lib/geniatagger-3.0.1/")
+  lines = []
   if options["input_type"] == "sentence":
-    commands.getoutput("echo " + options["sentence"] + " | ./geniatagger > ../../tmpFiles/SignalIdentification/geniataggerOutput")
+    lines.append(options["sentence"])
   else:
     console = commands.getoutput("wget -O input " + options["src"])
     if len(console.split("\n")) > 2:
       if console.split("\n")[len(console.split("\n")) - 2].find("NOT FOUND") != -1:
-        makeNGResponce("SRC_FILE_NOT_FOUND")
+        makeNGResponse("SRC_FILE_NOT_FOUND")
       else:
-        print commands.getoutput("echo " + options["sentence"] + " | ./geniatagger < input > ../../tmpFiles/SignalIdentification/geniataggerOutput")
-    sys.exit()
+        srcFile = codecs.open("input", "r", "utf-8")
+        
+        lines = srcFile.readlines()
+    else:
+      makeNGResponse("INTERNAL_ERROR")
+  feature = ""
+  for line in lines:
+    print "****"
+    command = "/usr/local/bin/ruby client.rb \"" + line.replace(".", " . ") + "\""
+    command = re.sub(r'[\n|\r|\r\n]', '', command)
+    feature += commands.getoutput(command).replace(" ", "\n")
+  print feature
   os.chdir("../../cgi-bin")
-def runPhase1(document, options):
-  geniataggerOutput = open("../tmpFiles/SignalIdentification/geniataggerOutput")
-  features = geniataggerOutput.readlines()
+
+  return feature
+
+def runPhase1(document, options, features):
+  #geniataggerOutput = open("../tmpFiles/SignalIdentification/geniataggerOutput")
+  #features = geniataggerOutput.readlines()
   document.parseGeniaFeature(features)
   output_signalFeature = open("../tmpFiles/SignalIdentification/features", "w")
   document.outputSignalFeature(output_signalFeature)
@@ -346,6 +367,8 @@ def runPhase2(document, options):
 def main():
   document = Document()
   options = {"train_type" : "clinical_records", "output_type" : "json"}
+  print "OK"
+  print sys.argv[3]
   if len(sys.argv) > 4:
     options["train_type"] = sys.argv[1]
     options["output_type"] = sys.argv[2]
@@ -353,14 +376,16 @@ def main():
     options["sentence"] = sys.argv[4]
     validateRequests(options)
   else:
-    makeNGResponce("INTERNAL_ERROR")
+    makeNGResponse("INTERNAL_ERROR")
   
-  runGeniatagger(options)
-  
-  runPhase1(document, options)
+  feature = runGeniatagger(options)
+  runPhase1(document, options, feature)
   runPhase2(document, options)
   print "**********"
-  print document.makeResponse_JSON()
+  if options["output_type"] == "text":
+    print document.makeResponse_text()
+  else:
+    print document.makeResponse_JSON()
   
 
 if __name__ == "__main__":
