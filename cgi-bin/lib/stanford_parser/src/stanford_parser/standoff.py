@@ -33,18 +33,12 @@ class TextStandoff:
         return start
 
     def overlaps(self, standoff):
-        if self.start < standoff.end and standoff.start < self.end:
-            return True
-        else:
-            return False
+        return self.start < standoff.end and standoff.start < self.end
     def contains(self, standoff):
         start, end = standoff
         return self.start <= start and self.end >= end
     def before(self, standoff):
-        if self.end <= standoff.start:
-            return True
-        else:
-            return False
+        return self.end <= standoff.start
     def degreeOfOverlap(self, standoff):
         """
         Returns the size of the overlapping range of two tags. Returns

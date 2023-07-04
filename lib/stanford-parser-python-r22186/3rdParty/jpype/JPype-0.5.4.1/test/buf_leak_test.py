@@ -4,7 +4,7 @@ import time
 remote_pack="c:/tools/netbeean-remote-pack"
 
 profiler_options = [
-	"-agentpath:%s/lib/deployed/jdk15/windows/profilerinterface.dll=%s/lib,5140" % (remote_pack, remote_pack)
+    f"-agentpath:{remote_pack}/lib/deployed/jdk15/windows/profilerinterface.dll={remote_pack}/lib,5140"
 ]
 
 options = [

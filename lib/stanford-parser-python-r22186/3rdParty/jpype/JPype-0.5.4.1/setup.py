@@ -7,11 +7,15 @@ class JPypeSetup(object):
         self.extra_compile_args = []
         self.macros = []
 
-    def setupFiles(self) :
+    def setupFiles(self):
         cpp_files = [
-                 map(lambda x : "src/native/common/"+x, os.listdir("src/native/common")),
-                 map(lambda x : "src/native/python/"+x, os.listdir("src/native/python")),
-                 ]
+            map(
+                lambda x: f"src/native/common/{x}", os.listdir("src/native/common")
+            ),
+            map(
+                lambda x: f"src/native/python/{x}", os.listdir("src/native/python")
+            ),
+        ]
 
         all_src = []
         for i in cpp_files :
@@ -38,7 +42,7 @@ class JPypeSetup(object):
         self.javaHome = '/Library/Java/Home'
         self.jdkInclude = ""
         self.libraries = ["dl"]
-        self.libraryDir = [self.javaHome+"/lib"]
+        self.libraryDir = [f"{self.javaHome}/lib"]
         self.macros = [('MACOSX',1)]
     
     def setupLinux(self):
@@ -46,9 +50,9 @@ class JPypeSetup(object):
         if self.javaHome is None :
             self.javaHome = '/usr/lib/jvm/java-1.5.0-sun-1.5.0.08' # Ubuntu linux
             # self.javaHome = '/usr/java/jdk1.5.0_05'    
-        self.jdkInclude = "linux"    
+        self.jdkInclude = "linux"
         self.libraries = ["dl"]
-        self.libraryDir = [self.javaHome+"/lib"]
+        self.libraryDir = [f"{self.javaHome}/lib"]
     
     def setupPlatform(self):
         if sys.platform == 'win32' :
@@ -60,10 +64,10 @@ class JPypeSetup(object):
 
     def setupInclusion(self):
         self.includeDirs = [
-            self.javaHome+"/include", 
-            self.javaHome+"/include/"+self.jdkInclude,
-            "src/native/common/include",  
-            "src/native/python/include", 
+            f"{self.javaHome}/include",
+            f"{self.javaHome}/include/{self.jdkInclude}",
+            "src/native/common/include",
+            "src/native/python/include",
         ]
 
 

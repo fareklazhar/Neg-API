@@ -103,12 +103,8 @@ class ConversionConfigClass(object):
         return self._convertString
     
     def _setConvertString(self, value):
-        if value :
-            self._convertString = 1
-        else:
-            self._convertString = 0
-            
-        _jpype.setConvertStringObjects(self._convertString)
+    	self._convertString = 1 if value else 0
+    	_jpype.setConvertStringObjects(self._convertString)
         
     string = property(_getConvertString, _setConvertString, None )
     

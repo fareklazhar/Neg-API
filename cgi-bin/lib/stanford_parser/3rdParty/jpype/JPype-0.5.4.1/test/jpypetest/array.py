@@ -104,11 +104,11 @@ class ArrayTestCase(common.JPypeTestCase) :
     	assert len(v) == 1
     	assert v[0] is not None
 
-if __name__ == '__main__' :
+if __name__ == '__main__':
     import os.path
-    root = os.path.abspath(os.path.dirname(__file__))    
-    common.CLASSPATH= "%s/../../build/test/java" % root
-    
+    root = os.path.abspath(os.path.dirname(__file__))
+    common.CLASSPATH = f"{root}/../../build/test/java"
+
     runner = unittest.TextTestRunner()
     runner.run(suite())
 

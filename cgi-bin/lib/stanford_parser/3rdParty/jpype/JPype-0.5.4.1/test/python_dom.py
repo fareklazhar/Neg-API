@@ -17,21 +17,21 @@
 import time
 from xml.dom import minidom
 
-def output(el, prefix="") :
+def output(el, prefix=""):
     if el.nodeType != el.ELEMENT_NODE :
         return
-        
+
     #print prefix, "<", el.tagName, 
-    
+
     atts = el.attributes
     for i in range(atts.length) :
         a = atts.item(i);
         #print a.nodeName, '="%s"' % a.nodeValue, 
     #print '>'
-    
+
     nl = el.childNodes
-    for i in range(nl.length) :
-        output(nl.item(i), prefix+"  ")
+    for i in range(nl.length):
+        output(nl.item(i), f"{prefix}  ")
 
 
     #print prefix, "</", el.tagName, ">"

@@ -33,10 +33,8 @@ class AbstractAction(object) :
     def getValue(self, key) :
         return self.__values.get(key, None)
           
-    def isEnabled(self) :
-        if self.__enabled :
-            return True
-        return False
+    def isEnabled(self):
+        return bool(self.__enabled)
           
     def putValue(self, key, value) :
         oldVal = self.__values.get(key, None)

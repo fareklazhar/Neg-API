@@ -62,10 +62,10 @@ class AttributeTestCase(common.JPypeTestCase) :
  		assert v[0] == 'a'
  		assert v[1] == 'b'
  
- 	def testCallStringWithNone(self) :
- 		v = self.__jp.Test1.testStaticString("a", None)
- 		assert v[0] == 'a'
- 		assert v[1] == None
+ 	def testCallStringWithNone(self):
+		v = self.__jp.Test1.testStaticString("a", None)
+		assert v[0] == 'a'
+		assert v[1] is None
  
  	def testWithHolder(self) :
  		print 'testWithHolder'

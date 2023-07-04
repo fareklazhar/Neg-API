@@ -20,13 +20,13 @@ class Dependencies:
         self.sentence = sentence
 
         self.posTags = posTags        
-        
+
         self.tokens = tokens
 
         self.tokensToPosTags = dict(zip(self.tokens, self.posTags))
 
         self.dependencies = dependencies
-        
+
         self.govToDeps = {}
         self.depToGov = {}
         self.constituentsToRelation = {}
@@ -40,11 +40,16 @@ class Dependencies:
 
             self.govToDeps.setdefault(gov, [])
             self.govToDeps[gov].append(dep)
-            assert not dep in self.depToGov, (dep.text, [(key.text, value.text)
-                                                         for key, value in self.depToGov.iteritems()])
+            assert dep not in self.depToGov, (
+                dep.text,
+                [
+                    (key.text, value.text)
+                    for key, value in self.depToGov.iteritems()
+                ],
+            )
             self.depToGov[dep] = gov
             self.constituentsToRelation[(gov,dep)] = relation
-            
+
         self.checkRep()
 
     def tagForTokenStandoff(self, tokenStandoff):
@@ -52,7 +57,6 @@ class Dependencies:
         
         
     def checkRep(self):
-        assert len(self.posTags) == len(self.posTags)        
         for t in self.tokens:
             assert t.entireText == self.sentence
 
@@ -68,9 +72,9 @@ class Dependencies:
     
     def __str__(self):
         result = ""
-        result += "sentence=" + repr(self.sentence) + "\n"
+        result += f"sentence={repr(self.sentence)}" + "\n"
         for relation, gov, dep in self.dependencies:
-            result += relation + "(" + gov.text + ", " + dep.text + ")\n"
+            result += f"{relation}({gov.text}, {dep.text}" + ")\n"
         return result
 
 stanford_parser_home = None
@@ -80,9 +84,11 @@ def startJvm():
     os.environ.setdefault("STANFORD_PARSER_HOME", "../lib/stanford-parser-python-r22186/3rdParty/stanford-parser/stanford-parser-2010-08-20")
     global stanford_parser_home
     stanford_parser_home = os.environ["STANFORD_PARSER_HOME"]
-    jpype.startJVM(jpype.getDefaultJVMPath(),
-                   "-ea",
-                   "-Djava.class.path=%s/stanford-parser.jar" % (stanford_parser_home),)
+    jpype.startJVM(
+        jpype.getDefaultJVMPath(),
+        "-ea",
+        f"-Djava.class.path={stanford_parser_home}/stanford-parser.jar",
+    )
 
 startJvm() # one jvm per python instance.
 

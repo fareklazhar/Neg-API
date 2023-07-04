@@ -19,7 +19,7 @@ from jpype import *
 
 import os.path
 root = os.path.abspath(os.path.dirname(__file__))
-startJVM(getDefaultJVMPath(), "-ea", "-Djava.class.path=%s/classes" % root)
+startJVM(getDefaultJVMPath(), "-ea", f"-Djava.class.path={root}/classes")
 
 # XML test
 Element = JPackage("org").w3c.dom.Element

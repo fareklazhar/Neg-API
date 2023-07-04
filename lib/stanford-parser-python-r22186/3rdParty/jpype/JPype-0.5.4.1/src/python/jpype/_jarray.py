@@ -57,11 +57,14 @@ class _JavaArrayClass(object) :
 	def __setslice__(self, i, j, v) : 
 		_jpype.setArraySlice(self.__javaobject__, i, j, v)
 
-def _jarrayInit(self, *args) :
-	if len(args) == 2 and args[0] == _jclass._SPECIAL_CONSTRUCTOR_KEY :
+def _jarrayInit(self, *args):
+	if len(args) == 2 and args[0] == _jclass._SPECIAL_CONSTRUCTOR_KEY:
 		_JavaArrayClass.__init__(self, args[1])
-	elif len(args) != 1 :
-		raise ParameterException, "Array classes only take 2 parameters, %s given" % (len(args)+1,)
+	elif len(args) != 1:
+		raise (
+			ParameterException,
+			f"Array classes only take 2 parameters, {len(args) + 1} given",
+		)
 	else:
 		values = None
 		if operator.isSequenceType(args[0]) :
@@ -69,9 +72,9 @@ def _jarrayInit(self, *args) :
 			values = args[0]
 		else :
 			sz = args[0]
-			
+
 		_JavaArrayClass.__init__(self, _jpype.newArray(self.__class__.__javaclass__, sz))
-		
+
 		if values is not None :
 			_jpype.setArrayValues(self.__javaobject__, values)
 		
@@ -139,10 +142,8 @@ def _charArrayUnicode(self) :
 	return u''.join(self)		
 
 class CharArrayCustomizer(object) :
-	def canCustomize(self, name, jc) :
-		if name == 'char[]' :
-			return True
-		return False
+	def canCustomize(self, name, jc):
+		return name == 'char[]'
 		
 	def customize(self, name, jc, bases, members) :
 		members['__str__'] =  _charArrayStr   
@@ -154,10 +155,8 @@ def _byteArrayStr(self) :
 	
 	
 class ByteArrayCustomizer(object) :
-	def canCustomize(self, name, jc) :
-		if name == 'byte[]' :
-			return True
-		return False
+	def canCustomize(self, name, jc):
+		return name == 'byte[]'
 		
 	def customize(self, name, jc, bases, members) :
 		members['__str__'] =  _byteArrayStr   

@@ -32,39 +32,38 @@ JRE_ARCHS = [
 			 ]
 
 
-def getDefaultJVMPath() :
+def getDefaultJVMPath():
     jvm = _getJVMFromJavaHome()
     if jvm is not None :
         return jvm
-       
+
     #on linux, the JVM has to be in the LD_LIBRARY_PATH anyway, so might as well inspect it first
     jvm = _getJVMFromLibPath()
     if jvm is not None :
         return jvm
-    
-    # failing that, lets look in the "known" locations
-    for i in _KNOWN_LOCATIONS :
-        # TODO
-        pass
 
     return "/usr/java/jre1.5.0_05/lib/i386/client/libjvm.so"
         
 def _getJVMFromJavaHome():
-	java_home = os.getenv("JAVA_HOME")
-	rootJre = None
-	if os.path.exists(java_home+"/bin/javac") :
-		# this is a JDK home
-		rootJre = java_home + '/jre/lib'
-	elif os.path.exists(java_home+"/bin/java") :
-		# this is a JRE home
-		rootJre = java_home + '/lib'
-	else:
-		return None
-	
-	for i in JRE_ARCHS :
-		if os.path.exists(rootJre+"/"+i) :
-			return rootJre+"/"+i
-	return None
+    java_home = os.getenv("JAVA_HOME")
+    rootJre = None
+    if os.path.exists(f"{java_home}/bin/javac"):
+        		# this is a JDK home
+        rootJre = f'{java_home}/jre/lib'
+    elif os.path.exists(f"{java_home}/bin/java"):
+        		# this is a JRE home
+        rootJre = f'{java_home}/lib'
+    else:
+        return None
+
+    return next(
+        (
+            f"{rootJre}/{i}"
+            for i in JRE_ARCHS
+            if os.path.exists(f"{rootJre}/{i}")
+        ),
+        None,
+    )
 		
         
 def _getJVMFromLibPath() :

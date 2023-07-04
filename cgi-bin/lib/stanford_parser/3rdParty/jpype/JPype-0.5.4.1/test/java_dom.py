@@ -22,21 +22,21 @@ startJVM(getDefaultJVMPath(), "-ea")
 # XML test
 Element = JPackage("org").w3c.dom.Element
 
-def output(el, prefix="") :
+def output(el, prefix=""):
     if not Element.__isinstance__(el) :
         return
-        
+
     #print prefix, "<", el.getTagName(), 
-    
+
     atts = el.getAttributes()
     for i in range(atts.getLength()) :
         a = atts.item(i);
         #print a.getNodeName(), '="%s"' % a.getNodeValue(), 
     #print '>'
-    
+
     nl = el.getChildNodes()
-    for i in range(nl.getLength()) :
-        output(nl.item(i), prefix+"  ")
+    for i in range(nl.getLength()):
+        output(nl.item(i), f"{prefix}  ")
 
 
     #print prefix, "</", el.getTagName(), ">"

@@ -64,7 +64,13 @@ def runStringToByteArray(data):
     print '    test run in', (end-start), 'seconds.'
 
 root = os.path.abspath(os.path.dirname(__file__))
-jpype.startJVM(jpype.getDefaultJVMPath(), "-ea", "-Xmx5M", "-verbose:gc", "-Djava.class.path=./classes%s%s%sclasses" % (os.pathsep, root, os.sep))
+jpype.startJVM(
+    jpype.getDefaultJVMPath(),
+    "-ea",
+    "-Xmx5M",
+    "-verbose:gc",
+    f"-Djava.class.path=./classes{os.pathsep}{root}{os.sep}classes",
+)
 
 DELETED = False
 class MyStr(str):

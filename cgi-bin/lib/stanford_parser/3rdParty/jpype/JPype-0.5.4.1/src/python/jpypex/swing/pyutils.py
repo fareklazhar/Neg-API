@@ -13,16 +13,16 @@ def buildMenuBar(menuDef) :
         
     return mb
         
-def buildMenu(name, menuDef) :
+def buildMenu(name, menuDef):
     jm = __JMenu(name)
-    
-    for i in menuDef :
-        if i is None :
+
+    for i in menuDef:
+        if i is None:
             jm.addSeparator()
-        elif isinstance(i, list) or isinstance(i, tuple) :
+        elif isinstance(i, (list, tuple)):
             jm2 = buildMenu(i[0], i[1])
             jm.add(jm2)
         else:
             jm.add(i.proxy)
-                 
+
     return jm

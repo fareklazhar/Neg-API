@@ -23,11 +23,8 @@ def _initialize() :
     _jpype.setStringWrapperClass(JString)
 
 class _JWrapper(object) :
-    def __init__(self, v) :
-        if v is not None :
-            self._value = _jpype.convertToJValue(self.typeName, v)
-        else:
-            self._value = None
+    def __init__(self, v):
+        self._value = None if v is None else _jpype.convertToJValue(self.typeName, v)
             
     
 class JByte(_JWrapper) :
@@ -54,25 +51,25 @@ class JBoolean(_JWrapper) :
 class JString(_JWrapper) :
     typeName = "java.lang.String"
     
-def _getDefaultTypeName(obj) :
+def _getDefaultTypeName(obj):
     if obj is True or obj is False :
         return 'java.lang.Boolean'
-        
-    if isinstance(obj, str) or isinstance(obj, unicode) :
+
+    if isinstance(obj, (str, unicode)):
         return "java.lang.String"
 
     if isinstance(obj, int) :
         return "java.lang.Integer"
-        
+
     if isinstance(obj, long) :
         return "java.lang.Long"
-        
+
     if isinstance(obj, float) :
         return "java.lang.Double"
 
     if isinstance(obj, _jclass._JavaClass) :
         return obj.__javaclassname__
-        
+
     if isinstance(obj, _jclass.java.lang.Class) :
         return obj.__class__.__javaclass__.getName()
 
@@ -80,7 +77,10 @@ def _getDefaultTypeName(obj) :
         return obj.typeName
 
 
-    raise RuntimeException, "Unable to determine the default type of "+obj.__class__
+    raise (
+        RuntimeException,
+        f"Unable to determine the default type of {obj.__class__}",
+    )
 
 class JObject(_JWrapper) :
     def __init__(self, v, tp = None) :

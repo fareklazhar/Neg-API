@@ -58,17 +58,15 @@ class JavaException(Exception) :
 def _initialize() :
 	_jpype.setJavaExceptionClass(JavaException)
 		
-def _makePythonException(name, bc) :
+def _makePythonException(name, bc):
 	name = bc.getName()
-	
+
 	if _CLASSES.has_key(name) :
 		return _CLASSES[name]
-		
+
 	if name == 'java.lang.Throwable' :
 		bases = (JavaException,)
 	else:
 		bases = (_makePythonException(bc.getName(), bc.getBaseClass()) ,)
-		
-	ec = new.classobj(name+"PyRaisable", bases, {'JAVACLASSNAME' : name})
-	
-	return ec
+
+	return new.classobj(f"{name}PyRaisable", bases, {'JAVACLASSNAME' : name})

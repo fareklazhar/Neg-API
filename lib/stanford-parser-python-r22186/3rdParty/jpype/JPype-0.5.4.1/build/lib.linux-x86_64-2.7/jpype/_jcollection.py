@@ -40,22 +40,20 @@ def _colDelItem(self, i) :
     return self.remove(i)
 
 def _colAddAll(self, v):
-    if isPythonSequence(v) :
-        r = False
-        for i in v :
-            r = self.add(i) or r
-        return r
-    else:
+    if not isPythonSequence(v):
         return self._addAll(v)
+    r = False
+    for i in v :
+        r = self.add(i) or r
+    return r
 
 def _colRemoveAll(self, v):
-    if isPythonSequence(v) :
-        r = False
-        for i in v :
-            r = self.remove(i) or r
-        return r
-    else:
+    if not isPythonSequence(v):
         return self._removeAll(v)
+    r = False
+    for i in v :
+        r = self.remove(i) or r
+    return r
 
 def _colRetainAll(self, v):
     if isPythonSequence(v) :
@@ -108,15 +106,15 @@ def _listGetItem(self, ndx) :
             ndx = self.size() + ndx
         return self.get(ndx)
         
-def _listSetItem(self, ndx, v) :
-    if isinstance(ndx, slice) :
+def _listSetItem(self, ndx, v):
+    if isinstance(ndx, slice):
         start = ndx.start
         stop = ndx.stop
         if start < 0 :
             start = self.size() + start
         if stop < 0 :
             stop = self.size() + stop
-        for i in range(start, stop) :
+        for _ in range(start, stop):
             self.remove(start)
         if operator.isSequenceType(v) :
             ndx = start
@@ -129,18 +127,17 @@ def _listSetItem(self, ndx, v) :
         self.set(ndx, v)
 
 def _listAddAll(self, v, v2=None):
-    if isPythonSequence(v) :
-        r = False
-        if v2 is not None : # assume form (int, values)
-            for i in range(len(v2)) :
-                r = r or self.add(v+i, v2[i])
-                ndx +=1
-        else:    
-            for i in v :
-                r = self.add(i) or r
-        return r
-    else:
+    if not isPythonSequence(v):
         return self._addAll(v)
+    r = False
+    if v2 is not None : # assume form (int, values)
+        for i in range(len(v2)) :
+            r = r or self.add(v+i, v2[i])
+            ndx +=1
+    else:    
+        for i in v :
+            r = self.add(i) or r
+    return r
 
 class ListCustomizer(object) :
     _METHODS = {
@@ -148,18 +145,15 @@ class ListCustomizer(object) :
         '__getitem__' : _listGetItem,
     }
     
-    def canCustomize(self, name, jc) :
-        if name == 'java.util.List' :
-            return True
-        return jc.isSubclass('java.util.List')
+    def canCustomize(self, name, jc):
+        return True if name == 'java.util.List' else jc.isSubclass('java.util.List')
         
-    def customize(self, name, jc, bases, members) :
-        if name == 'java.util.List' :
+    def customize(self, name, jc, bases, members):
+        if name == 'java.util.List':
             members.update(ListCustomizer._METHODS)
-        else:
-            if 'addAll' in members :
-                members['_addAll'] = members['addAll']
-                members['addAll'] = _listAddAll            
+        elif 'addAll' in members:
+            members['_addAll'] = members['addAll']
+            members['addAll'] = _listAddAll            
        
 def isPythonMapping(v):       
     if operator.isMappingType(v) :
@@ -199,18 +193,15 @@ class MapCustomizer(object) :
         '__setitem__' : _mapSetItem,
     }
     
-    def canCustomize(self, name, jc) :
-        if name == 'java.util.Map' :
-            return True
-        return jc.isSubclass('java.util.Map')
+    def canCustomize(self, name, jc):
+        return True if name == 'java.util.Map' else jc.isSubclass('java.util.Map')
         
-    def customize(self, name, jc, bases, members) :
-        if name == 'java.util.Map' :
+    def customize(self, name, jc, bases, members):
+        if name == 'java.util.Map':
             members.update(MapCustomizer._METHODS)
-        else:
-            if "putAll" in members :
-                   members["_putAll"] = members["putAll"]
-                   members["putAll"] = _mapPutAll
+        elif "putAll" in members:
+            members["_putAll"] = members["putAll"]
+            members["putAll"] = _mapPutAll
 
 def _iterNext(self) :
     if self.hasNext() :

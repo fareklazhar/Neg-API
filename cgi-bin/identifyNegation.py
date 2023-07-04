@@ -59,41 +59,36 @@ class Document(object):
   def runParser(self):
     tokens = self.sentences
     for sentence in self.sentences:
-      raw_sentence = ""
-      for tmp in sentence.token_Instances:
-        raw_sentence += tmp.feature["token"] + " "
+      raw_sentence = "".join(tmp.feature["token"] + " "
+                             for tmp in sentence.token_Instances)
       sf = ScopeFinding(raw_sentence)
       for i in range(len(sentence.token_Instances)):
         if sentence.token_Instances[i].feature["scope_class"] == "START":
           sentence.token_Instances[i].feature["token"] = "<neg_scope>" + sentence.token_Instances[i].feature["token"]
           sentence.token_Instances[sf.findEND(i)].feature["token"] += "</neg_scope>"
-      returnSentence = ""
-      for tmp in sentence.token_Instances:
-         returnSentence += tmp.feature["token"] + " "
+      returnSentence = "".join(tmp.feature["token"] + " "
+                               for tmp in sentence.token_Instances)
       sentence.sentence_annotated_scope = returnSentence
   def outputSignalFeature(self, filename):
     for i in range(len(self.sentences)):
       self.sentences[i].outputSignalFeature(filename)
   def makeResponse_JSON(self):
-    j = {}
-    j["status"] = "OK"
-    j["results"] = []
+    j = {"status": "OK", "results": []}
     annotated_signal = []
     annotated_scope = []
 
     for sentence in self.sentences:
-      tmp = {}
-      tmp["result_annotated_signal"] = sentence.sentence_annotated_signal
-      tmp["result_annotated_scope"] = sentence.sentence_annotated_scope
-      tmp["isNegation"] = sentence.isNegation
+      tmp = {
+          "result_annotated_signal": sentence.sentence_annotated_signal,
+          "result_annotated_scope": sentence.sentence_annotated_scope,
+          "isNegation": sentence.isNegation,
+      }
       j["results"].append(tmp)
-    
+
     return json.dumps(j)
   def makeResponse_text(self):
-    t = ""
-    for sentence in self.sentences:
-      t += sentence.sentence_annotated_scope + "\n"
-    return t
+    return "".join(sentence.sentence_annotated_scope + "\n"
+                   for sentence in self.sentences)
 
 
 
@@ -130,45 +125,37 @@ class Sentence(object):
       signalFeature += "\tUNKNOWN_LABEL\n"
       filename.write(signalFeature)
   def getNeighborFeatures(self, requests, i, n):
-    responseNULL = ""
-    for x in range(len(requests)):
-      responseNULL += "\t0"
+    responseNULL = "".join("\t0" for _ in range(len(requests)))
     if n > 0:
-      if len(self.token_Instances) > i+n:
-        return "\t" + self.token_Instances[i+n].getFeatures(requests)
-      else:
-        return responseNULL
+      return ("\t" + self.token_Instances[i + n].getFeatures(requests)
+              if len(self.token_Instances) > i + n else responseNULL)
+    if i+n >= 0:
+      return "\t" + self.token_Instances[i+n].getFeatures(requests)
     else:
-      if i+n >= 0:
-        return "\t" + self.token_Instances[i+n].getFeatures(requests)
-      else:
-        return responseNULL
+      return responseNULL
   def getNeighborChunks(self, i, n):
     responseNULL = "\t0\t0\t0\t0"
     if n > 0:
-      if len(self.chunk_Instances) > i+n:
-        return "\t" + self.chunk_Instances[i+n].getFeatureLine()
-      else:
-        return responseNULL
+      return ("\t" + self.chunk_Instances[i + n].getFeatureLine()
+              if len(self.chunk_Instances) > i + n else responseNULL)
+    if i+n >= 0:
+      return "\t" + self.chunk_Instances[i+n].getFeatureLine()
     else:
-      if i+n >= 0:
-        return "\t" + self.chunk_Instances[i+n].getFeatureLine()
-      else:
-        return responseNULL
+      return responseNULL
   def setSignalClass(self, tokenNum, signalClass, token):
     self.token_Instances[tokenNum].setSignalClass(signalClass)
     if self.flag == False and signalClass != "OUTSIDE":
       self.negation_signals.append(Negation_signal(token, tokenNum))
-      self.sentence_annotated_signal += "<neg_signal>" + token + " "
+      self.sentence_annotated_signal += f"<neg_signal>{token} "
       self.flag = True
     elif self.flag == True and signalClass == "OUTSIDE":
-      self.sentence_annotated_signal += "</neg_signal>" + token + " "
+      self.sentence_annotated_signal += f"</neg_signal>{token} "
       self.flag = False
     else:
       if self.flag == True:
-        
+
         self.negation_signals[len(self.negation_signals) - 1].addNegationToken(token, tokenNum)
-      self.sentence_annotated_signal += token + " "
+      self.sentence_annotated_signal += f"{token} "
   def setScopeClass(self, tokenNum, scopeClass, token):
     self.token_Instances[tokenNum].setScopeClass(scopeClass)
   def setIsNegation(self, isNegation):
@@ -215,24 +202,23 @@ class Sentence(object):
 class Negation_signal(object):
   def __init__(self, token, tokenNum):
     self.neg_phrase = token
-    self.tokenNums = []
-    self.tokenNums.append(tokenNum)
+    self.tokenNums = [tokenNum]
   def addNegationToken(self, token, tokenNum):
-    self.neg_phrase += "-" + token
+    self.neg_phrase += f"-{token}"
     self.tokenNums.append(tokenNum)
   def getDistanceInfo(self, tokenNum):
-    tmp = []
-    distanceInfo = {}
-    distanceInfo["isNegSignal"] = "0"
-    for i in range(len(self.tokenNums)):
-      tmp.append(math.fabs(self.tokenNums[i] - tokenNum))
+    distanceInfo = {"isNegSignal": "0"}
+    tmp = [
+        math.fabs(self.tokenNums[i] - tokenNum)
+        for i in range(len(self.tokenNums))
+    ]
     if min(tmp) == 0:
       distanceInfo["position"] = "SAME"
       distanceInfo["isNegSignal"] = "Neg"
     elif tokenNum - self.tokenNums[0] > 0:
       distanceInfo["position"] = "POST"
     else:
-      distanceInfo["position"] = "PRE"     
+      distanceInfo["position"] = "PRE"
     distanceInfo["distance"] = min(tmp)
     return distanceInfo
 
@@ -251,12 +237,10 @@ class Token(object):
       self.feature["typeOfChunk"] = "0"
   def getFeatures(self, requestFeatureset):
     response = ""
-    i = 0
-    for requestFeature in requestFeatureset:
+    for i, requestFeature in enumerate(requestFeatureset):
       if i != 0:
         response += "\t"
       response += self.feature[requestFeature]
-      i += 1
     return response
   def setSignalClass(self, signalClass):
     self.feature["signal_class"] = signalClass
@@ -270,9 +254,9 @@ class Chunk(object):
     self.tokenLine = token
     self.posLine = pos
   def addToken(self, token, pos):
-    self.tokenLine += "-" + token
+    self.tokenLine += f"-{token}"
     self.lastToken = token
-    self.posLine += "-" + pos
+    self.posLine += f"-{pos}"
   def getFirstTokenNum(self):
     return self.firstTokenNum
   def getFeatureLine(self):
@@ -342,19 +326,16 @@ def runPhase1(document, options, features):
   #geniataggerOutput = open("../tmpFiles/SignalIdentification/geniataggerOutput")
   #features = geniataggerOutput.readlines()
   document.parseGeniaFeature(features)
-  output_signalFeature = open("../tmpFiles/SignalIdentification/features", "w")
-  document.outputSignalFeature(output_signalFeature)
-  output_signalFeature.close()
+  with open("../tmpFiles/SignalIdentification/features", "w") as output_signalFeature:
+    document.outputSignalFeature(output_signalFeature)
   commands.getoutput("/usr/local/bin/timbl -f ../data/phase1/" + options["train_type"] + ".txt -t ../tmpFiles/SignalIdentification/features -o ../tmpFiles/SignalIdentification/timbl_learned")
-  inputTimblLearned = open("../tmpFiles/SignalIdentification/timbl_learned")
-  results = inputTimblLearned.readlines()
-  document.parseTimblLearned_signal(results)
-  inputTimblLearned.close()
+  with open("../tmpFiles/SignalIdentification/timbl_learned") as inputTimblLearned:
+    results = inputTimblLearned.readlines()
+    document.parseTimblLearned_signal(results)
 def runPhase2(document, options):
-  output_scopeFeature = open("../tmpFiles/ScopeIdentification/features", "w")
-  for sentence in document.sentences:
-    sentence.outputScopeFeature(output_scopeFeature)
-  output_scopeFeature.close()
+  with open("../tmpFiles/ScopeIdentification/features", "w") as output_scopeFeature:
+    for sentence in document.sentences:
+      sentence.outputScopeFeature(output_scopeFeature)
   commands.getoutput("/usr/local/bin/timbl -f ../data/phase2/" + options["train_type"] + ".txt -t ../tmpFiles/ScopeIdentification/features -o ../tmpFiles/ScopeIdentification/timbl_learned")
   inputTimblLearned = open("../tmpFiles/ScopeIdentification/timbl_learned")
   results = inputTimblLearned.readlines()

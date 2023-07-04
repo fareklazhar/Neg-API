@@ -48,11 +48,11 @@ def _initialize() :
 def registerClassCustomizer(c) :
 	_CUSTOMIZERS.append(c)
 	
-def JClass(name) :
+def JClass(name):
 	jc = _jpype.findClass(name)
-	if jc is None :
-		raise _RUNTIMEEXCEPTION.PYEXC("Class %s not found" % name)
-		
+	if jc is None:
+		raise _RUNTIMEEXCEPTION.PYEXC(f"Class {name} not found")
+
 	return _getClassFor(jc)
 
 def _getClassFor(javaClass) :
@@ -92,10 +92,10 @@ def _javaGetAttr(self, name) :
 	return r
 
 class _JavaClass(type) :  
-	def __new__(mcs, jc) :
+	def __new__(cls, jc):
 		bases = []
 		name = jc.getName()
-		
+
 		static_fields = {}
 		constants = []
 		members = {
@@ -107,56 +107,53 @@ class _JavaClass(type) :
 			"__ne__" : lambda self, o : not self.equals(o),
 			"__getattribute__" : _javaGetAttr,
 		}
-		
+
 		if name == 'java.lang.Object' or jc.isPrimitive():
 			bases.append(object)
 		elif not jc.isInterface() :
 			bjc = jc.getBaseClass(jc)
 			bases.append( _getClassFor(bjc) )
-		
+
 		if _JAVATHROWABLE is not None and jc.isSubclass("java.lang.Throwable") :
 			members["PYEXC"] = _jexception._makePythonException(name, bjc)
 
 		itf = jc.getBaseInterfaces()
-		for ic in itf :
-			bases.append( _getClassFor(ic) )
-		
-		if len(bases) == 0 :
+		bases.extend(_getClassFor(ic) for ic in itf)
+		if not bases:
 			bases.append(_JAVAOBJECT)
-		
+
 		# add the fields	
 		fields = jc.getClassFields()
-		for i in fields :
+		for i in fields:
 			fname = i.getName()
-			if fname in KEYWORDS :
-				fname = fname + "_"
-				
-			if i.isStatic() :
+			if fname in KEYWORDS:
+				fname = f"{fname}_"
+
+			s = None
+			if i.isStatic():
 				g = lambda self, fld=i : fld.getStaticAttribute()
-				s = None
 				if not i.isFinal() :
 					s = lambda self, v, fld=i : fld.setStaticAttribute(v)
 				static_fields[fname] = property(g, s)
 			else:
 				g = lambda self, fld=i : fld.getInstanceAttribute(self.__javaobject__)
-				s = None
 				if not i.isFinal() :
 					s = lambda self, v, fld=i : fld.setInstanceAttribute(self.__javaobject__, v)
 				members[fname] = property(g, s)
-		
+
 		# methods
 		methods = jc.getClassMethods() # return tuple of tuple (name, method)
-		for jm in methods :
+		for jm in methods:
 			mname = jm.getName()
-			if mname in KEYWORDS :
-				mname = mname + "_"
-								
+			if mname in KEYWORDS:
+				mname = f"{mname}_"
+
 			members[mname] = jm
 
 		for i in _CUSTOMIZERS :
 			if i.canCustomize(name, jc) :
 				i.customize(name, jc, bases, members)
-		
+
 		# remove multiple bases that would cause a MRO problem
 		toRemove = sets.Set()
 		for c in bases :
@@ -165,21 +162,21 @@ class _JavaClass(type) :
 					continue
 				if issubclass(c, d) :
 					toRemove.add(d)
-					
+
 		for i in toRemove :
 			bases.remove(i)
 
 		# Prepare the meta-metaclass
 		meta_bases = []
-		for i in bases :
-			if i is object :
-				meta_bases.append(mcs)
+		for i in bases:
+			if i is object:
+				meta_bases.append(cls)
 			else:
 				meta_bases.append(i.__metaclass__)
-				
-		metaclass = type.__new__(type, name+"$$Static", tuple(meta_bases), static_fields)
+
+		metaclass = type.__new__(
+			type, f"{name}$$Static", tuple(meta_bases), static_fields
+		)
 		members['__metaclass__'] = metaclass
-		result =  type.__new__(metaclass, name, tuple(bases), members)
-		
-		return result
+		return type.__new__(metaclass, name, tuple(bases), members)
 				

@@ -12,9 +12,13 @@ class ScopeFinding:
 				if start_node.ancestor(i, self.root).getLeaves().get(0) != start_node:
 					if i != 0 and start_node.ancestor(i-1, self.root).getLeaves().size() == 0:
 						pass
-					elif i != 0 and start_node.ancestor(i-1, self.root).getLeaves().get(start_node.ancestor(i-1, self.root).getLeaves().size() - 1) == start_node:
-						pass
-					else:
+					elif (
+						i == 0
+						or start_node.ancestor(i - 1, self.root)
+						.getLeaves()
+						.get(start_node.ancestor(i - 1, self.root).getLeaves().size() - 1)
+						!= start_node
+					):
 						scope = start_node.ancestor(i-1, self.root).getLeaves()
 						end_node = scope.get(scope.size() - 1)
 						break
